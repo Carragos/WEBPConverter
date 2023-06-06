@@ -8,24 +8,35 @@ import threading
 # Store the directory
 selected_dir = None
 
+# Store the filenames
+filenames = []
+
+def update_file_status(file, status):
+    # Update the status of a file in the text_widget
+    index = filenames.index(file)
+    text_widget.delete(f"{index + 1}.0", f"{index + 1}.end")
+    text_widget.insert(f"{index + 1}.0", file + status)
+
 def browseDirectories():
-    global selected_dir
+    global selected_dir, filenames
     selected_dir = filedialog.askdirectory(initialdir="/",
                                            title="Select a Directory")
     # Change label contents
     label_file_explorer.configure(text="Directory Opened: " + selected_dir)
 
-    # Clear the text widget
+    # Clear the text widget and filenames list
     text_widget.delete(1.0, END)
+    filenames.clear()
 
-    # Display all .jpg images in the text widget
-    for file in glob.glob(selected_dir + "/*.jpg"):
+    # Display all .jpg and .png images in the text widget
+    for file in glob.glob(selected_dir + "/*.jpg") + glob.glob(selected_dir + "/*.png"):
+        filenames.append(os.path.basename(file))
         text_widget.insert(END, os.path.basename(file) + '\n')
 
 def convertImages():
-    global selected_dir
+    global selected_dir, filenames
     if selected_dir:
-        files = glob.glob(selected_dir + "/*.jpg")
+        files = glob.glob(selected_dir + "/*.jpg") + glob.glob(selected_dir + "/*.png")
 
         # Set the maximum value for the progress bar
         progress['maximum'] = len(files)
@@ -40,8 +51,11 @@ def convertImages():
             webp_path = os.path.join(webp_dir, os.path.basename(webp_path))
             img.save(webp_path, "WEBP")
 
-            # Update progress bar in a thread-safe way
+            # Update file status and progress bar in a thread-safe way
+            window.after(0, update_file_status, os.path.basename(file), "...DONE")
             window.after(0, update_progress, i+1)
+
+
 
 
 def update_progress(value):
