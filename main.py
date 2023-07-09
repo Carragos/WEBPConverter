@@ -5,11 +5,17 @@ from tkinter import filedialog, ttk
 import PIL.Image
 import threading
 
+window = Tk()
+
 # Store the directory
 selected_dir = None
 
 # Store the filenames
 filenames = []
+
+# Global variable for quality
+quality = IntVar()
+quality.set(90)  # Set initial quality level
 
 def update_file_status(file, status):
     # Update the status of a file in the text_widget
@@ -46,10 +52,13 @@ def convertImages():
         os.makedirs(webp_dir, exist_ok=True)
 
         for i, file in enumerate(files):
-            img = PIL.Image.open(file)
-            webp_path = os.path.splitext(file)[0] + "_WEBP.webp"
-            webp_path = os.path.join(webp_dir, os.path.basename(webp_path))
-            img.save(webp_path, "WEBP")
+            try:
+                img = PIL.Image.open(file)
+                webp_path = os.path.splitext(file)[0] + "_WEBP.webp"
+                webp_path = os.path.join(webp_dir, os.path.basename(webp_path))
+                img.save(webp_path, "WEBP", quality=quality.get())
+            except Exception as e:
+                print(f"Error converting {file}: {e}")
 
             # Update file status and progress bar in a thread-safe way
             window.after(0, update_file_status, os.path.basename(file), "...DONE")
@@ -65,7 +74,7 @@ def start_conversion():
     # Create a separate thread for the conversion process
     threading.Thread(target=convertImages).start()
 
-window = Tk()
+
 
 # Set window title
 window.title('JPG/PNG to WEBP Converter GUI')
@@ -95,6 +104,12 @@ button_exit = Button(button_frame, text="Exit", command=exit, height=2)
 progress.pack(fill='x')
 button_convert.pack(side=LEFT, fill=X, expand=1)
 button_exit.pack(side=RIGHT, fill=X, expand=1)
+
+# Create and pack the slider and quality display field
+slider = Scale(button_frame, from_=50, to=100, orient=HORIZONTAL, variable=quality, tickinterval=10, length=200)
+quality_display = Entry(button_frame, textvariable=quality, width=3)
+slider.pack(side=LEFT, fill=X, expand=1)
+quality_display.pack(side=LEFT, fill=X, expand=1)
 
 # Let the window wait for any events
 window.mainloop()
