@@ -159,8 +159,9 @@ button_convert = Button(
 button_exit = Button(button_frame, text="Exit", command=exit, height=2)
 
 progress.pack(fill="x")
-button_convert.pack(side=LEFT, fill=X, expand=1)
-button_exit.pack(side=RIGHT, fill=X, expand=1)
+button_exit.pack(side=LEFT, fill=X, expand=1)
+button_convert.pack(side=RIGHT, fill=X, expand=1)
+
 
 # Let the window wait for any events
 window.mainloop()
