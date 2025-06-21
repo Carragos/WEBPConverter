@@ -63,6 +63,8 @@ def browseDirectories():
 def convertImages():
     global selected_dir, filenames
     if selected_dir:
+        # Clear the text_widget at the start of conversion
+        window.after(0, lambda: text_widget.delete(1.0, END))
         # Walk through all directories and subdirectories
         all_image_files = []
         for root, dirs, files in os.walk(selected_dir):
@@ -102,6 +104,14 @@ def convertImages():
                 thumb.save(thumb_path, "WEBP", quality=quality.get())
             except Exception as e:
                 print(f"Error converting {file}: {e}")
+
+            # Show file name and first subdirectory in text_widget
+            rel_path = os.path.relpath(img_dir, selected_dir)
+            first_subdir = rel_path.split(os.sep)[0] if os.sep in rel_path else rel_path
+            display_name = img_name
+            if first_subdir and first_subdir != '.':
+                display_name = f"{first_subdir}/{img_name}"
+            window.after(0, lambda name=display_name: text_widget.insert(END, name + "\n"))
 
             # Update file status and progress bar in a thread-safe way
             window.after(0, update_file_status, img_name, "...DONE")
